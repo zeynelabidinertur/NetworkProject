@@ -37,7 +37,7 @@ class App(Thread):
         self.gettext.pack()
         sframe = Frame(frame)
         sframe.pack(anchor='w')
-        self.pro = Label(sframe, text="Server>>");
+        self.pro = Label(sframe, text="Server>>")
         self.sendtext = Entry(sframe, width=80)
         self.sendtext.focus_set()
         self.sendtext.bind(sequence="<Return>", func=self.Send)
