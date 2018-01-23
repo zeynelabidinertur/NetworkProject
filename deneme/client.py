@@ -14,6 +14,9 @@ class MyMessenger:
         self.master = master
         self.ip_address = Tkinter.StringVar()
         self.port_number = Tkinter.StringVar()
+        self.photo = Tkinter.PhotoImage(file="emojiler/rsz_unamused_face_emoji.png", width=20, height=20)
+        self.photo2 = Tkinter.PhotoImage(file="emojiler/rsz_very_angry_emoji.png", width=20, height=20)
+        self.photo3 = Tkinter.PhotoImage(file="emojiler/rsz_tears_of_joy_emoji.png", width=20, height=20)
 
 
     def receive(self):
@@ -26,6 +29,7 @@ class MyMessenger:
                 break
 
     def send(self, event=None):  # event is passed by binders.
+
         """Handles sending of messages."""
         msg = self.my_msg.get()
         self.my_msg.set("")  # Clears input field.
@@ -34,31 +38,36 @@ class MyMessenger:
             self.client_socket.close()
             self.master.quit()
 
+    # def send_tread(self):
+    #     tr = Thread(target=self.send())
+    #     tr.start()
+
     def on_closing(self, event=None):
         """This function is to be called when the window is closed."""
         self.my_msg.set("{quit}")
         self.send()
 
-
     def start_connection(self, event=None):
         # ----Now comes the sockets part----
-        HOST = self.ip_address
-        PORT = self.port_number
-        if not PORT:
-            PORT = 8888
-        else:
-            PORT = int(PORT)
+        HOST = self.ip_address.get()
+        PORT = self.port_number.get()
 
-        self.BUFSIZ = 1024
-        ADDR = (HOST, PORT)
+        ADDR = (HOST, int(PORT))
 
-        self.client_socket = socket(AF_INET, SOCK_STREAM)
-        self.client_socket.connect(ADDR)
+        try:
+            self.client_socket.connect(ADDR)
+        except:
+            print "Please enter a valid ip address and a port number"
+
+        self.master.protocol("WM_DELETE_WINDOW", self.on_closing)
+
+        receive_thread = Thread(target=self.receive)
+        receive_thread.start()
 
     def update_protocol(self, event=None):
-        if self.selected_protocol == "tcp":
+        if self.selected_protocol.get() == "tcp":
             self.client_socket = socket(AF_INET, SOCK_STREAM)
-        if self.selected_protocol == "udp":
+        elif self.selected_protocol.get() == "udp":
             self.client_socket = socket(AF_INET, SOCK_DGRAM)
         else:
             print str(self.selected_protocol) + "Please select a valid communication protocol"
@@ -68,15 +77,14 @@ class MyMessenger:
 
         messages_frame = Tkinter.Frame(self.master)
         # For the messages to be sent.
-        my_msg = Tkinter.StringVar()
-        my_msg.set("Type your messages here.")
+        self.my_msg.set("Type your messages here.")
         scrollbar = Tkinter.Scrollbar(messages_frame)  # To navigate through past messages.
         # Following will contain the messages.
         self.msg_list = Tkinter.Listbox(messages_frame, height=15, width=50, yscrollcommand=scrollbar.set)
         scrollbar.grid(column=1, row=0, sticky="NS")
         self.msg_list.grid(column=0, row=0, sticky="NSEW")
 
-        entry_field = Tkinter.Entry(messages_frame, textvariable=my_msg)
+        entry_field = Tkinter.Entry(messages_frame, textvariable=self.my_msg)
         entry_field.bind("<Return>", self.send)
         entry_field.grid(column=0, row=1, sticky="EW")
         send_button = Tkinter.Button(messages_frame, text="Send", command=self.send)
@@ -84,46 +92,44 @@ class MyMessenger:
 
         emoji_frame = Tkinter.Frame(messages_frame)
         emoji_frame.grid(column=0, row=3, sticky="EW")
-        photo = Tkinter.PhotoImage(file="emojiler/rsz_unamused_face_emoji.png", width=20, height=20)
-        angry = Tkinter.Button(emoji_frame, image=photo, relief="flat")
+
+        angry = Tkinter.Button(emoji_frame, image=self.photo, relief="flat")
         angry.grid(row=0, column=6)
-        angry2 = Tkinter.Button(emoji_frame, image=photo, relief="flat")
+        angry2 = Tkinter.Button(emoji_frame, image=self.photo, relief="flat")
         angry2.grid(row=0, column=7)
-        angry3 = Tkinter.Button(emoji_frame, image=photo, relief="flat")
+        angry3 = Tkinter.Button(emoji_frame, image=self.photo, relief="flat")
         angry3.grid(row=0, column=8)
-        angry4 = Tkinter.Button(emoji_frame, image=photo, relief="flat")
+        angry4 = Tkinter.Button(emoji_frame, image=self.photo, relief="flat")
         angry4.grid(row=1, column=6)
-        angry5 = Tkinter.Button(emoji_frame, image=photo, relief="flat")
+        angry5 = Tkinter.Button(emoji_frame, image=self.photo, relief="flat")
         angry5.grid(row=1, column=7)
-        angry6 = Tkinter.Button(emoji_frame, image=photo, relief="flat")
+        angry6 = Tkinter.Button(emoji_frame, image=self.photo, relief="flat")
         angry6.grid(row=1, column=8)
 
-        photo2 = Tkinter.PhotoImage(file="emojiler/rsz_very_angry_emoji.png", width=20, height=20)
-        happy = Tkinter.Button(emoji_frame, image=photo2, relief="flat")
+        happy = Tkinter.Button(emoji_frame, image=self.photo2, relief="flat")
         happy.grid(row=0, column=0)
-        happy2 = Tkinter.Button(emoji_frame, image=photo2, relief="flat")
+        happy2 = Tkinter.Button(emoji_frame, image=self.photo2, relief="flat")
         happy2.grid(row=0, column=1)
-        happy3 = Tkinter.Button(emoji_frame, image=photo2, relief="flat")
+        happy3 = Tkinter.Button(emoji_frame, image=self.photo2, relief="flat")
         happy3.grid(row=0, column=2)
-        happy4 = Tkinter.Button(emoji_frame, image=photo2, relief="flat")
+        happy4 = Tkinter.Button(emoji_frame, image=self.photo2, relief="flat")
         happy4.grid(row=0, column=3)
-        happy5 = Tkinter.Button(emoji_frame, image=photo2, relief="flat")
+        happy5 = Tkinter.Button(emoji_frame, image=self.photo2, relief="flat")
         happy5.grid(row=0, column=4)
-        happy6 = Tkinter.Button(emoji_frame, image=photo2, relief="flat")
+        happy6 = Tkinter.Button(emoji_frame, image=self.photo2, relief="flat")
         happy6.grid(row=0, column=5)
 
-        photo3 = Tkinter.PhotoImage(file="emojiler/rsz_tears_of_joy_emoji.png", width=20, height=20)
-        face = Tkinter.Button(emoji_frame, image=photo3, relief="flat")
+        face = Tkinter.Button(emoji_frame, image=self.photo3, relief="flat")
         face.grid(row=1, column=0)
-        face2 = Tkinter.Button(emoji_frame, image=photo3, relief="flat")
+        face2 = Tkinter.Button(emoji_frame, image=self.photo3, relief="flat")
         face2.grid(row=1, column=1)
-        face3 = Tkinter.Button(emoji_frame, image=photo3, relief="flat")
+        face3 = Tkinter.Button(emoji_frame, image=self.photo3, relief="flat")
         face3.grid(row=1, column=2)
-        face4 = Tkinter.Button(emoji_frame, image=photo3, relief="flat")
+        face4 = Tkinter.Button(emoji_frame, image=self.photo3, relief="flat")
         face4.grid(row=1, column=3)
-        face5 = Tkinter.Button(emoji_frame, image=photo3, relief="flat")
+        face5 = Tkinter.Button(emoji_frame, image=self.photo3, relief="flat")
         face5.grid(row=1, column=4)
-        face6 = Tkinter.Button(emoji_frame, image=photo3, relief="flat")
+        face6 = Tkinter.Button(emoji_frame, image=self.photo3, relief="flat")
         face6.grid(row=1, column=5)
         messages_frame.grid(row=0, column=0)
 
@@ -147,23 +153,19 @@ class MyMessenger:
         port_field.grid(column=0, row=2, columnspan=2, sticky="EW")
 
         start_connection_button = Tkinter.Button(settings_frame, text="Start Connection", command=self.start_connection,
-                                                 relief="ridge").grid(row=3, column=0, columnspan=2, sticky="EW")
+                                                 relief="ridge")
+        start_connection_button.grid(row=3, column=0, columnspan=2, sticky="EW")
 
-        send_file_button = Tkinter.Button(settings_frame, text="Send File", relief="ridge").grid(row=4, column=0,
-                                                                                                 columnspan=2,
-                                                                                                 sticky="EW")
+        send_file_button = Tkinter.Button(settings_frame, text="Send File", relief="ridge")
+        send_file_button.grid(row=4, column=0, columnspan=2, sticky="EW")
 
         protocol_frame.grid(row=1, column=0, padx=10)
         settings_frame.grid(row=0, column=1, padx=10)
-
-        self.master.protocol("WM_DELETE_WINDOW", self.on_closing)
-
-        # Starts GUI execution.
-        # receive_thread = Thread(target=self.receive)
-        # receive_thread.start()
 
 
 top = Tkinter.Tk()
 deneme = MyMessenger(top)
 deneme.gui_builder()
+# gui_tread = Thread(target=)
+# gui_tread.start()
 top.mainloop()
