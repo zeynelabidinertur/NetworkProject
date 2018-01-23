@@ -2,6 +2,8 @@
 from socket import AF_INET, socket, SOCK_STREAM, SOCK_DGRAM
 from threading import Thread
 import Tkinter
+import Tkinter, Tkconstants, tkFileDialog
+
 
 
 class MyMessenger:
@@ -71,6 +73,11 @@ class MyMessenger:
             self.client_socket = socket(AF_INET, SOCK_DGRAM)
         else:
             print str(self.selected_protocol) + "Please select a valid communication protocol"
+
+    def file_location(self):
+        self.filename = tkFileDialog.askopenfilename(initialdir="/", title="Select file",
+                                                     filetypes=(("jpeg files", "*.jpg"), ("all files", "*.*")))
+        print self.filename
 
     def gui_builder(self):
         self.master.title("Chatter")
@@ -156,7 +163,8 @@ class MyMessenger:
                                                  relief="ridge")
         start_connection_button.grid(row=3, column=0, columnspan=2, sticky="EW")
 
-        send_file_button = Tkinter.Button(settings_frame, text="Send File", relief="ridge")
+        send_file_button = Tkinter.Button(settings_frame, text="Send File", relief="ridge",
+                                          command=lambda: self.file_location())
         send_file_button.grid(row=4, column=0, columnspan=2, sticky="EW")
 
         protocol_frame.grid(row=1, column=0, padx=10)
@@ -169,3 +177,4 @@ deneme.gui_builder()
 # gui_tread = Thread(target=)
 # gui_tread.start()
 top.mainloop()
+
