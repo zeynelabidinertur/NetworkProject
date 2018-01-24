@@ -24,8 +24,8 @@ class Receive():
 
 class App(Thread):
     server = socket()
-    print gethostbyaddr(input("IP address: "))
-    server.bind((gethostbyaddr(int(input("IP address: ")))[2], input("Port: ")))
+    # print gethostbyaddr(input("IP address: "))
+    server.bind((gethostbyaddr(input("IP address: "))[0], 3000))
     server.listen(5)
     client, addr = server.accept()
 

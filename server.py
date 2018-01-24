@@ -17,7 +17,7 @@ def handle_client(client):  # Takes client socket as argument.
     """Handles a single client connection."""
 
     name = client.recv(BUFSIZ).decode("utf8")
-    welcome = 'Welcome %s! If you ever want to quit, type {quit} to exit.' % name
+    welcome = 'Welcome %s! If you ever want to quit, type quit to exit.' % name
     client.send(bytes(welcome))
     msg = "%s has joined the chat!" % name
     broadcast(bytes(msg))
@@ -25,14 +25,17 @@ def handle_client(client):  # Takes client socket as argument.
 
     while True:
         msg = client.recv(BUFSIZ)
-        if msg != bytes("{quit}"):
-            broadcast(msg, name + ": ")
-        else:
-            client.send(bytes("{quit}"))
+        if msg == bytes("quit"):
+            client.send(bytes("quit"))
             client.close()
             del clients[client]
             broadcast(bytes("%s has left the chat." % name))
             break
+        elif msg == bytes("{emoji}"):
+
+        else:
+            broadcast(msg, name + ": ")
+
 
 
 def broadcast(msg, prefix=""):  # prefix is for name identification.
@@ -46,7 +49,7 @@ clients = {}
 addresses = {}
 
 HOST = 'localhost'
-PORT = 8888
+PORT = 8880
 BUFSIZ = 1024
 ADDR = (HOST, PORT)
 

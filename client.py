@@ -1,9 +1,9 @@
 """Script for Tkinter GUI chat client."""
 from socket import AF_INET, socket, SOCK_STREAM, SOCK_DGRAM
 from threading import Thread
-import Tkinter
 import Tkinter, Tkconstants, tkFileDialog
 
+from setuptools.dist import sequence
 
 
 class MyMessenger:
@@ -12,13 +12,15 @@ class MyMessenger:
         self.selected_protocol = Tkinter.StringVar()
         self.BUFSIZ = 1024
         self.my_msg = Tkinter.StringVar()
-        self.msg_list = Tkinter.Listbox()
+        self.msg_list = Tkinter.Text()
         self.master = master
         self.ip_address = Tkinter.StringVar()
         self.port_number = Tkinter.StringVar()
-        self.photo = Tkinter.PhotoImage(file="emojiler/rsz_unamused_face_emoji.png", width=20, height=20)
+        self.photo = Tkinter.PhotoImage(file="emojiler/rsz_very_angry_emoji.png", width=20, height=20)
         self.photo2 = Tkinter.PhotoImage(file="emojiler/rsz_very_angry_emoji.png", width=20, height=20)
         self.photo3 = Tkinter.PhotoImage(file="emojiler/rsz_tears_of_joy_emoji.png", width=20, height=20)
+        self.emoji_path = Tkinter.StringVar()
+
 
 
     def receive(self):
@@ -26,7 +28,7 @@ class MyMessenger:
         while True:
             try:
                 msg = self.client_socket.recv(self.BUFSIZ).decode("utf8")
-                self.msg_list.insert(Tkinter.END, msg)
+                self.msg_list.insert(Tkinter.END, msg + "\n")
             except OSError:  # Possibly client has left the chat.
                 break
 
@@ -36,17 +38,13 @@ class MyMessenger:
         msg = self.my_msg.get()
         self.my_msg.set("")  # Clears input field.
         self.client_socket.send(bytes(msg))
-        if msg == "{quit}":
+        if msg == "quit":
             self.client_socket.close()
-            self.master.quit()
-
-    # def send_tread(self):
-    #     tr = Thread(target=self.send())
-    #     tr.start()
+            # self.master.quit()
 
     def on_closing(self, event=None):
         """This function is to be called when the window is closed."""
-        self.my_msg.set("{quit}")
+        self.my_msg.set("quit")
         self.send()
 
     def start_connection(self, event=None):
@@ -79,6 +77,10 @@ class MyMessenger:
                                                      filetypes=(("jpeg files", "*.jpg"), ("all files", "*.*")))
         print self.filename
 
+    def send_emoji(self, event=None):
+        self.my_msg.set("{emoji}" + self.emoji_path.get())
+        self.send()
+
     def gui_builder(self):
         self.master.title("Chatter")
 
@@ -87,7 +89,7 @@ class MyMessenger:
         self.my_msg.set("Type your messages here.")
         scrollbar = Tkinter.Scrollbar(messages_frame)  # To navigate through past messages.
         # Following will contain the messages.
-        self.msg_list = Tkinter.Listbox(messages_frame, height=15, width=50, yscrollcommand=scrollbar.set)
+        self.msg_list = Tkinter.Text(messages_frame, font="a, 9", height=15, width=50, yscrollcommand=scrollbar.set)
         scrollbar.grid(column=1, row=0, sticky="NS")
         self.msg_list.grid(column=0, row=0, sticky="NSEW")
 
@@ -100,7 +102,8 @@ class MyMessenger:
         emoji_frame = Tkinter.Frame(messages_frame)
         emoji_frame.grid(column=0, row=3, sticky="EW")
 
-        angry = Tkinter.Button(emoji_frame, image=self.photo, relief="flat")
+        angry = Tkinter.Button(emoji_frame, image=self.photo, relief="flat", command=self.emoji_path.set("emojiler/rsz_very_angry_emoji.png"))
+        angry.configure(command=self.send_emoji)
         angry.grid(row=0, column=6)
         angry2 = Tkinter.Button(emoji_frame, image=self.photo, relief="flat")
         angry2.grid(row=0, column=7)
@@ -174,7 +177,5 @@ class MyMessenger:
 top = Tkinter.Tk()
 deneme = MyMessenger(top)
 deneme.gui_builder()
-# gui_tread = Thread(target=)
-# gui_tread.start()
 top.mainloop()
 

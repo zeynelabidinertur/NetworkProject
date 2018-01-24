@@ -22,7 +22,7 @@ class Receive():
 
 class App(Thread):
     client = socket()
-    client.connect((gethostbyaddr("127.0.0.0"), input("Port: ")))
+    client.connect((gethostbyaddr(input("Host: "))[0], 3000))
 
     def __init__(self, master):
         Thread.__init__(self)
