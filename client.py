@@ -1,7 +1,6 @@
 """Script for Tkinter GUI chat client."""
-from socket import AF_INET, socket, SOCK_STREAM, SOCK_DGRAM
+from socket import AF_INET, socket, SOCK_STREAM, SOCK_DGRAM, gethostbyaddr
 from threading import Thread
-import Tkinter
 import Tkinter, Tkconstants, tkFileDialog
 
 
@@ -12,21 +11,29 @@ class MyMessenger:
         self.selected_protocol = Tkinter.StringVar()
         self.BUFSIZ = 1024
         self.my_msg = Tkinter.StringVar()
-        self.msg_list = Tkinter.Listbox()
+        self.msg_box = Tkinter.Text()
         self.master = master
         self.ip_address = Tkinter.StringVar()
-        self.port_number = Tkinter.StringVar()
-        self.photo = Tkinter.PhotoImage(file="emojiler/rsz_unamused_face_emoji.png", width=20, height=20)
-        self.photo2 = Tkinter.PhotoImage(file="emojiler/rsz_very_angry_emoji.png", width=20, height=20)
-        self.photo3 = Tkinter.PhotoImage(file="emojiler/rsz_tears_of_joy_emoji.png", width=20, height=20)
+        # self.port_number = Tkinter.StringVar()
+        self.photo = Tkinter.PhotoImage(file="e/1.png", width=20, height=20)
+        self.photo2 = Tkinter.PhotoImage(file="e/rsz_very_angry_emoji.png", width=20, height=20)
+        self.photo3 = Tkinter.PhotoImage(file="e/rsz_tears_of_joy_emoji.png", width=20, height=20)
+        self.emoji_path = Tkinter.StringVar()
 
 
     def receive(self):
         """Handles receiving of messages."""
+        emojies_array = []
         while True:
             try:
                 msg = self.client_socket.recv(self.BUFSIZ).decode("utf8")
-                self.msg_list.insert(Tkinter.END, msg)
+                if msg[0:7] == bytes("{emoji}"):
+                    temp_emoji = Tkinter.PhotoImage(file=msg[7:], width=20, height=20)
+                    emojies_array.append(temp_emoji)
+                    emojies_array.append(self.msg_box.image_create(Tkinter.END, image=temp_emoji))
+                    self.msg_box.insert(Tkinter.END, "\n")
+                else:
+                    self.msg_box.insert(Tkinter.END, msg + "\n")
             except OSError:  # Possibly client has left the chat.
                 break
 
@@ -40,21 +47,28 @@ class MyMessenger:
             self.client_socket.close()
             self.master.quit()
 
-    # def send_tread(self):
-    #     tr = Thread(target=self.send())
-    #     tr.start()
+    def send_emoji(self, event=None):
+        self.my_msg.set("{emoji}" + self.emoji_path.get())
+        self.send()
 
     def on_closing(self, event=None):
         """This function is to be called when the window is closed."""
         self.my_msg.set("{quit}")
         self.send()
 
-    def start_connection(self, event=None):
-        # ----Now comes the sockets part----
-        HOST = self.ip_address.get()
-        PORT = self.port_number.get()
+    def udp_connection(self):
+        print "udp"
 
-        ADDR = (HOST, int(PORT))
+    def tcp_connection(self):
+        print "tcp"
+
+    def start_connection(self, event=None):
+
+        # ----Now comes the sockets part----
+        HOST = gethostbyaddr(self.ip_address.get())[0]
+        PORT = 4000
+
+        ADDR = (HOST, PORT)
 
         try:
             self.client_socket.connect(ADDR)
@@ -87,9 +101,10 @@ class MyMessenger:
         self.my_msg.set("Type your messages here.")
         scrollbar = Tkinter.Scrollbar(messages_frame)  # To navigate through past messages.
         # Following will contain the messages.
-        self.msg_list = Tkinter.Listbox(messages_frame, height=15, width=50, yscrollcommand=scrollbar.set)
+        self.msg_box = Tkinter.Text(messages_frame, height=15, width=50, yscrollcommand=scrollbar.set)
+        scrollbar.config(command=self.msg_box.yview)
         scrollbar.grid(column=1, row=0, sticky="NS")
-        self.msg_list.grid(column=0, row=0, sticky="NSEW")
+        self.msg_box.grid(column=0, row=0, sticky="NSEW")
 
         entry_field = Tkinter.Entry(messages_frame, textvariable=self.my_msg)
         entry_field.bind("<Return>", self.send)
@@ -100,7 +115,8 @@ class MyMessenger:
         emoji_frame = Tkinter.Frame(messages_frame)
         emoji_frame.grid(column=0, row=3, sticky="EW")
 
-        angry = Tkinter.Button(emoji_frame, image=self.photo, relief="flat")
+        angry = Tkinter.Button(emoji_frame, image=self.photo, relief="flat", command=self.emoji_path.set("e/1.png"))
+        angry.configure(command=self.send_emoji)
         angry.grid(row=0, column=6)
         angry2 = Tkinter.Button(emoji_frame, image=self.photo, relief="flat")
         angry2.grid(row=0, column=7)
@@ -155,9 +171,9 @@ class MyMessenger:
         ip_field = Tkinter.Entry(settings_frame, textvariable=self.ip_address)
         ip_field.grid(column=0, row=1, columnspan=2, sticky="EW")
 
-        self.port_number.set("Enter Port number")
-        port_field = Tkinter.Entry(settings_frame, textvariable=self.port_number)
-        port_field.grid(column=0, row=2, columnspan=2, sticky="EW")
+        # self.port_number.set("Enter Port number")
+        # port_field = Tkinter.Entry(settings_frame, textvariable=self.port_number)
+        # port_field.grid(column=0, row=2, columnspan=2, sticky="EW")
 
         start_connection_button = Tkinter.Button(settings_frame, text="Start Connection", command=self.start_connection,
                                                  relief="ridge")
@@ -174,7 +190,5 @@ class MyMessenger:
 top = Tkinter.Tk()
 deneme = MyMessenger(top)
 deneme.gui_builder()
-# gui_tread = Thread(target=)
-# gui_tread.start()
 top.mainloop()
 
